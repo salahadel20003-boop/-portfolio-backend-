@@ -10,7 +10,7 @@ const SECRET = "mysecretkey";
 app.use(cors());
 app.use(express.json());
 
-// ✅ CSP (مهم يتحط قبل أي routes)
+// ✅ CSP
 app.use((req, res, next) => {
   res.setHeader(
     "Content-Security-Policy",
@@ -52,11 +52,12 @@ app.get("/dashboard.html", verifyToken, (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/dashboard.html"));
 });
 
-// الصفحة الرئيسية
+// ⭐ الصفحة الرئيسية
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
+// تشغيل السيرفر
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
