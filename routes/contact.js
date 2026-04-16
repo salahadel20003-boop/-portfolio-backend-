@@ -1,39 +1,51 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const fs = require('fs');
+const fs = require("fs");
 
-// ✅ إرسال رسالة
-router.post('/', (req, res) => {
-  const { name, email, message } = req.body;
+module.exports = function (verifyToken) {
+  router.post("/", (req, res) => {
+    const { name, email, message } = req.body;
 
-  const newMessage = {
-    name,
-    email,
-    message,
-    date: new Date()
-  };
+    if (!name || !email || !message) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
 
-  let messages = [];
+    const newMessage = {
+      name,
+      email,
+      message,
+      date: new Date()
+    };
 
-  if (fs.existsSync('messages.json')) {
-    messages = JSON.parse(fs.readFileSync('messages.json'));
-  }
+    let messages = [];
 
-  messages.push(newMessage);
+    if (fs.existsSync("messages.json")) {
+      try {
+        messages = JSON.parse(fs.readFileSync("messages.json", "utf8"));
+      } catch {
+        messages = [];
+      }
+    }
 
-  fs.writeFileSync('messages.json', JSON.stringify(messages, null, 2));
+    messages.push(newMessage);
 
-  res.json({ message: 'Message saved successfully' });
-});
+    fs.writeFileSync("messages.json", JSON.stringify(messages, null, 2));
 
-// ✅ جلب الرسائل
-router.get('/', (req, res) => {
-  if (!fs.existsSync('messages.json')) {
-    return res.json([]);
-  }
+    res.json({ message: "Message saved successfully" });
+  });
 
-  const messages = JSON.parse(fs.readFileSync('messages.json'));
-  res.json(messages);
-});
+  router.get("/", verifyToken, (req, res) => {
+    if (!fs.existsSync("messages.json")) {
+      return res.json([]);
+    }
 
-module.exports = router;
+    try {
+      const messages = JSON.parse(fs.readFileSync("messages.json", "utf8"));
+      res.json(messages);
+    } catch {
+      res.json([]);
+    }
+  });
+
+  return router;
+};
